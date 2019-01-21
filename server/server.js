@@ -9,6 +9,7 @@ const {ObjectID} = require("mongodb")
 const {mongoose} = require("./db/mongoose.js")
 const {Todo} = require("./models/todo.js")
 const {User} = require("./models/user.js")
+const {authenticate} = require("./middleware/authenticate")
 
 
 let app = express()
@@ -103,6 +104,13 @@ app.patch("/todos/:id", (req,res) => {
 
 });
 
+
+
+
+
+app.get("/users/me", authenticate,(req,res) => {
+    res.send(req.user)
+})
 
 app.post("/users", (req, res) => {
     let body = _.pick(req.body, ["email", "password"])
