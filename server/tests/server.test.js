@@ -4,24 +4,10 @@ const {ObjectID} = require("mongodb")
 
 const {app} = require("./../server")
 const {Todo} = require("./../models/todo")
+const {todos, populateTodos, users,populateUsers} = require("./seed/seed")
 
-const todos = [{
-    _id: new ObjectID(),
-    text: "First test todo"
-}, {
-    _id: new ObjectID(),
-    text: "second test todo",
-    completed: true,
-    completedAt: 333
-}]
-
-beforeEach((done) => {
-    Todo.remove({}).then(() => {
-        return Todo.insertMany(todos)
-    }).then(() => {
-        done()
-    })
-})
+beforeEach(populateUsers)
+beforeEach(populateTodos)
 
 describe('POST /todos', () => {
     it ("Should create a new todo", (done) => {
@@ -104,8 +90,6 @@ describe("GET /todos/:id", () => {
             expect(res.status).toBe(404)
         }).end(done)
     })
-
-
 
 })
 
@@ -191,3 +175,20 @@ describe("PATCH /todo/:id", () => {
         .end(done)
     })
 })
+
+describe("GET /users/me", () => {
+
+    it("should return user if authenitcated", (done) => {
+        request(app)
+        .get("/users/me")
+        .set("x-auth", user[0].tokens[0].token)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body._id).toBe(users[0]._id.toHexString())
+            expect(res.body.email).toBe(users[0].email)
+        }).end(done)
+
+    })
+
+})
+

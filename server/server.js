@@ -1,6 +1,5 @@
 require("./config/config.js")
 
-
 const _ = require("lodash")
 const express = require("express")
 const bodyParser = require("body-parser")
@@ -10,7 +9,6 @@ const {mongoose} = require("./db/mongoose.js")
 const {Todo} = require("./models/todo.js")
 const {User} = require("./models/user.js")
 const {authenticate} = require("./middleware/authenticate")
-
 
 let app = express()
 const port = process.env.PORT || 3000
@@ -47,7 +45,7 @@ app.get("/todos/:id", (req,res) => {
 
     Todo.findById(id).then((todo) => {
         if(!todo){
-           return res.status(404).send("object id doesnt exist")
+           return res.status(404).send("Object id doesnt exist")
         }
         
         res.send({todo})
@@ -102,7 +100,7 @@ app.patch("/todos/:id", (req,res) => {
         res.status(400).send()
     })
 
-});
+})
 
 
 
