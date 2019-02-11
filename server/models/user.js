@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 const validator = require("validator")
 const jwt = require("jsonwebtoken")
 const _ = require("lodash")
-bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs")
 
-let UserSchema = new mongoose.Schema({
+let UserSchema = new mongoose.Schema({ //User Schema
     email: {
         type: String,
         required: true,
@@ -33,17 +33,17 @@ let UserSchema = new mongoose.Schema({
     }]
 })
 
-UserSchema.methods.toJSON = function(){
+UserSchema.methods.toJSON = function(){ //Determines what get sends back when a mongoose model gets convrted to json
     let user = this;
     let userObject = user.toObject()
 
     return _.pick(userObject, ["_id", "email"])
 }
 
-UserSchema.methods.generateAuthToken = function() {
+UserSchema.methods.generateAuthToken = function() { //Instance method
     let user = this;
     let access = "auth"
-    let token = jwt.sign({_id:user._id.toHexString(), access}, "abc123").toString()
+    let token = jwt.sign({_id:user._id.toHexString(), access}, "abc123").toString() //generating token via hashing
     
     user.tokens = user.tokens.concat([{access, token}]);
     return user.save().then(() => {
@@ -51,7 +51,7 @@ UserSchema.methods.generateAuthToken = function() {
     })
 }
 
-UserSchema.statics.findByToken = function(token) {
+UserSchema.statics.findByToken = function(token) { //turns into a model method rather then an instance method
     let User = this
     let decoded;
 
@@ -69,7 +69,28 @@ UserSchema.statics.findByToken = function(token) {
     })
 }
 
-UserSchema.pre("save", function(next){
+UserSchema.statics.findByCredentials = function(email, password){
+    let User = this;
+
+    return User.findOne({email}).then((user) => {
+        if(!user){
+            return Promise.reject()
+        }
+
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => {
+                if (res){
+                    resolve(user)
+                }else{
+                    reject()
+                }
+            })
+        })
+
+    })
+};
+
+UserSchema.pre("save", function(next){  //mongoose middleware; hashing password before saving user
     let user = this
 
     if(user.isModified("password")){
